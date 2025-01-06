@@ -166,7 +166,11 @@ def permission(scope=None):
                 g.login = None
                 g.customers = []
                 g.scopes = current_app.config['READONLY_SCOPES']
-                return f(*args, **kwargs)
+
+                if not Permission.is_in_scope(scope, have_scopes=g.scopes):
+                    raise BasicAuthError(f'Missing required scope: {scope}', 403)
+                else:
+                    return f(*args, **kwargs)
 
             # Google App Engine Cron Service
             if request.headers.get('X-Appengine-Cron', False) and request.headers.get('X-Forwarded-For', '') == '0.1.0.1':
